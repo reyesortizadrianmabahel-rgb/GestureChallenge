@@ -1,0 +1,51 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #101827;
+    color: white;
+    text-align: center;
+}
+
+.juego {
+    width: 95%;
+    max-width: 650px;
+    margin: 30px auto;
+    padding: 20px;
+    background: #1d2b42;
+    border-radius: 18px;
+}
+
+.marcadores {
+    display: flex;
+    justify-content: space-around;
+    background: #293d5c;
+    border-radius: 12px;
+    margin: 20px 0;
+}
+
+video {
+    width: 100%;
+    max-height: 380px;
+    background: black;
+    border-radius: 12px;
+    transform: scaleX(-1);
+}
+
+button {
+    padding: 15px 30px;
+    background: #1685ff;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0065d1;
+}

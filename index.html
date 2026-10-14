@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesture Challenge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="juego">
+        <h1>Gesture Challenge</h1>
+        <p>Juego de reflejos con gestos</p>
+
+        <div class="marcadores">
+            <h2>Puntos: <span id="puntos">0</span></h2>
+            <h2>Tiempo: <span id="tiempo">60</span></h2>
+        </div>
+
+        <h2 id="instruccion">Prepara tu mano</h2>
+
+        <video id="camara" autoplay playsinline muted></video>
+
+        <p id="estado">Camara apagada</p>
+
+        <button id="iniciar">Activar camara</button>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
