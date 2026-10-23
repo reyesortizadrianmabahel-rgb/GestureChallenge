@@ -1,258 +1,643 @@
 
+:root {
+    --fondo: #0b1120;
+    --panel: #121d30;
+    --panel-claro: #1a2940;
+    --borde: #2a3b54;
+    --texto: #f1f6ff;
+    --suave: #9aabc4;
+    --azul: #56a8ff;
+    --turquesa: #45e0bd;
+}
+
 * {
     box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    padding: 20px;
-    background: #0b1120;
-    color: white;
-    font-family: Arial, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    line-height: 1.5;
 }
 
-.contenedor {
-    width: 100%;
-    max-width: 850px;
-    margin: auto;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 25px;
-}
-
-header h1 {
-    margin: 8px 0;
-    font-size: clamp(28px, 5vw, 42px);
-}
-
-header p {
-    color: #aab8d0;
-}
-
-.etiqueta {
-    color: #53b7ff;
-    font-size: 12px;
-    letter-spacing: 3px;
-    font-weight: bold;
-}
-
-.marcadores {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.marcador {
-    padding: 18px 8px;
-    border-radius: 14px;
-    background: #17243a;
-    text-align: center;
-}
-
-.marcador span {
-    display: block;
-    font-size: 11px;
-    color: #9aacc9;
-    margin-bottom: 8px;
-}
-
-.marcador strong {
-    font-size: 26px;
-}
-
-.juego, .resumen {
-    background: #131e32;
-    padding: 22px;
-    border-radius: 20px;
-    border: 1px solid #263754;
-}
-
-.instrucciones {
-    text-align: center;
-}
-
-.instrucciones h2 {
-    font-size: clamp(22px, 4vw, 32px);
-    margin: 12px 0;
-}
-
-#estado {
-    color: #55b9ff;
-    font-weight: bold;
-}
-
-#descripcion, #resultado {
-    color: #b4c2d9;
-}
-
-.reloj {
-    width: 100%;
-    height: 10px;
-    background: #293750;
-    border-radius: 20px;
-    overflow: hidden;
-    margin-top: 20px;
-}
-
-#barraTiempo {
-    height: 100%;
-    width: 100%;
-    background: #27dba0;
-    transition: width 0.1s linear;
-}
-
-#cuentaRegresiva {
-    margin-bottom: 25px;
-}
-
-.carrusel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin: 20px 0;
-}
-
-.tarjeta {
-    flex: 1;
-    max-width: 400px;
-    min-width: 0;
-    padding: 22px 10px;
-    background: #1d2d47;
-    border: 1px solid #354967;
-    border-radius: 18px;
-    text-align: center;
-}
-
-.tarjeta span {
-    color: #8bbdff;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-#emojiGesto {
-    font-size: clamp(65px, 15vw, 100px);
-    margin: 15px 0;
-}
-
-.tarjeta h3 {
-    margin: 5px 0;
-    font-size: 21px;
-}
-
-.flecha {
-    width: 42px;
-    height: 52px;
-    font-size: 30px;
-    padding: 0;
+button, a {
+    -webkit-tap-highlight-color: transparent;
 }
 
 button {
-    border: none;
-    border-radius: 10px;
-    padding: 14px 20px;
-    background: #1685ff;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
+    font: inherit;
     cursor: pointer;
 }
 
-button:hover:not(:disabled) {
-    background: #0068d9;
+a {
+    color: var(--azul);
 }
 
-button:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
+.barra {
+    min-height: 78px;
+    padding: 15px max(5%, calc((100% - 1180px) / 2));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-bottom: 1px solid var(--borde);
+    background: #0e1727;
 }
 
-.secundario, .flecha {
-    background: #354967;
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--texto);
+    font-size: 18px;
+    font-weight: 800;
 }
 
-.camara-contenedor {
-    position: relative;
-    margin-top: 20px;
-    background: #05080e;
-    border-radius: 15px;
-    overflow: hidden;
-    min-height: 180px;
-}
-
-video {
+.marca small {
     display: block;
-    width: 100%;
-    max-height: 420px;
-    object-fit: cover;
-    transform: scaleX(-1);
+    font-size: 9px;
+    color: var(--suave);
+    letter-spacing: 1.5px;
 }
 
-.etiqueta-camara {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    padding: 8px 12px;
+.logo {
+    display: grid;
+    place-items: center;
+    width: 43px;
+    height: 43px;
+    background: linear-gradient(135deg, #4da5ff, #43e0bf);
+    color: #081425;
+    border-radius: 13px;
+    font-size: 25px;
+}
+
+.azul {
+    color: var(--azul);
+}
+
+.estado-sitio {
+    color: var(--suave);
+    font-size: 12px;
+}
+
+.estado-sitio i {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 7px;
+    border-radius: 50%;
+    background: var(--turquesa);
+}
+
+.contenedor {
+    max-width: 1180px;
+    width: 92%;
+    margin: auto;
+}
+
+.presentacion {
+    padding: 46px 0 30px;
+}
+
+.etiqueta {
+    color: var(--turquesa);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.presentacion h1 {
+    margin: 9px 0;
+    font-size: clamp(30px, 5vw, 48px);
+    line-height: 1.15;
+    letter-spacing: -1.5px;
+}
+
+.presentacion h1 span {
+    color: var(--turquesa);
+}
+
+.presentacion p {
+    max-width: 640px;
+    color: var(--suave);
+    margin-bottom: 0;
+}
+
+.pestanas {
+    display: flex;
+    gap: 8px;
+    padding: 6px;
+    width: fit-content;
+    max-width: 100%;
+    background: #111b2c;
+    border: 1px solid var(--borde);
+    border-radius: 13px;
+    margin-bottom: 22px;
+}
+
+.pestana {
+    padding: 12px 18px;
+    color: var(--suave);
+    background: transparent;
+    border: 0;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pestana.activa {
+    background: var(--panel-claro);
+    color: white;
+    box-shadow: inset 0 0 0 1px #344b69;
+}
+
+.estadisticas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.stat, .panel {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    border-radius: 17px;
+}
+
+.stat {
+    padding: 20px;
+}
+
+.stat span {
+    display: block;
+    color: var(--suave);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.stat strong {
+    display: block;
+    margin: 6px 0 2px;
+    font-size: 32px;
+    line-height: 1.2;
+}
+
+.stat small {
+    color: var(--suave);
+    font-size: 11px;
+}
+
+.unidad {
+    display: inline !important;
+    color: var(--suave) !important;
+    font-size: 15px !important;
+    letter-spacing: 0 !important;
+}
+
+.columnas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    align-items: stretch;
+}
+
+.panel {
+    padding: 24px;
+    min-width: 0;
+}
+
+.encabezado-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.encabezado-panel h2, .introduccion h2 {
+    margin: 5px 0 0;
+    font-size: 21px;
+}
+
+.insignia {
+    padding: 6px 9px;
     border-radius: 8px;
-    background: #111c2ddd;
+    background: #24354b;
+    color: var(--suave);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.visual-gesto {
+    min-height: 155px;
+    display: grid;
+    place-items: center;
+    margin: 22px 0 14px;
+    border: 1px solid #30425b;
+    border-radius: 15px;
+    background:
+        radial-gradient(ellipse at center, #203b53 0%, #17253a 65%);
+}
+
+#emojiGesto {
+    font-size: 88px;
+    filter: drop-shadow(0 8px 16px #0005);
+}
+
+.reto > h3 {
+    font-size: 21px;
+    margin: 0;
+}
+
+.reto > p, .introduccion p, .leccion p {
+    color: var(--suave);
+    font-size: 13px;
+}
+
+.fila-tiempo {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 22px;
+    font-size: 12px;
+}
+
+.fila-tiempo span {
+    color: var(--suave);
+}
+
+.progreso {
+    height: 8px;
+    margin: 10px 0;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #29384d;
+}
+
+#barraTiempo {
+    width: 100%;
+    height: 100%;
+    background: var(--turquesa);
+    transition: width 0.08s linear;
+}
+
+.resultado {
+    min-height: 44px;
+    padding: 10px;
+    border-radius: 9px;
+    background: #172a3d;
     font-size: 12px;
 }
 
 .acciones {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 20px;
+    gap: 10px;
+    margin-top: 15px;
 }
 
-#mensaje {
-    text-align: center;
-    color: #aab8d0;
+.principal, .secundario {
+    padding: 12px 17px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.principal {
+    background: var(--turquesa);
+    color: #071923;
+}
+
+.principal:hover {
+    background: #79f3d6;
+}
+
+.secundario {
+    color: var(--texto);
+    background: #24344b;
+    border-color: #3a4c65;
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.mensaje {
+    color: var(--suave);
+    font-size: 12px;
     overflow-wrap: anywhere;
 }
 
-.resumen {
+.marco-camara {
+    position: relative;
+    margin-top: 22px;
+    min-height: 250px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    border: 1px solid #30425b;
+    border-radius: 13px;
+    background:
+        radial-gradient(ellipse at center, #1a2a41, #080e19);
+}
+
+#camara {
+    display: block;
+    width: 100%;
+    max-height: 390px;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
+
+.camara-vacia {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     text-align: center;
+    padding: 15px;
+    pointer-events: none;
+}
+
+.icono-camara {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    margin-bottom: 8px;
+    border-radius: 17px;
+    background: #203650;
+    color: var(--turquesa);
+    font-size: 36px;
+}
+
+.camara-vacia strong {
+    font-size: 14px;
+}
+
+.camara-vacia span, .ayuda-camara {
+    color: var(--suave);
+    font-size: 12px;
+}
+
+.ayuda-camara {
+    margin: 13px 0 20px;
+}
+
+.nota {
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #30506a;
+    background: #172c3c;
+}
+
+.nota strong {
+    color: var(--turquesa);
+    font-size: 12px;
+}
+
+.nota p {
+    margin-bottom: 0;
+    color: #bdcadd;
+    font-size: 12px;
+}
+
+.recorrido {
+    margin-top: 18px;
+}
+
+.recorrido h2 {
+    margin-bottom: 0;
+}
+
+#resumenSecuencia {
+    color: var(--suave);
+    font-size: 12px;
+}
+
+.lista-gestos {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
     margin-top: 20px;
 }
 
-footer {
+.gesto-mini {
+    padding: 13px 5px;
     text-align: center;
-    color: #71819d;
-    font-size: 12px;
-    margin: 25px 0;
+    border-radius: 12px;
+    border: 1px solid var(--borde);
+    background: #172439;
+}
+
+.gesto-mini.actual {
+    border-color: var(--turquesa);
+    background: #193344;
+}
+
+.gesto-mini.completado {
+    border-color: #247f70;
+}
+
+.gesto-mini .mini-emoji {
+    font-size: 30px;
+}
+
+.gesto-mini strong {
+    display: block;
+    margin-top: 7px;
+    font-size: 10px;
+    overflow-wrap: anywhere;
+}
+
+.gesto-mini small {
+    display: block;
+    margin-top: 5px;
+    color: var(--suave);
+    font-size: 9px;
+}
+
+.final {
+    margin-top: 18px;
+    text-align: center;
+}
+
+.final h2 {
+    margin-bottom: 8px;
+}
+
+#resultadoFinal {
+    display: block;
+    margin: 18px 0;
+    color: var(--turquesa);
+    font-size: 25px;
+}
+
+.introduccion {
+    margin-bottom: 18px;
+    background: linear-gradient(120deg, #142c3c, #121d30);
+}
+
+.introduccion h2 {
+    font-size: clamp(22px, 4vw, 30px);
+}
+
+.enlace, .leccion a {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.enlace:hover, .leccion a:hover {
+    text-decoration: underline;
+}
+
+.tarjetas-aprendizaje {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.leccion {
+    position: relative;
+}
+
+.numero-leccion {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    color: #7e91ab;
+    font-size: 11px;
+}
+
+.ilustracion-leccion {
+    height: 125px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 20px;
+    border: 1px solid #30425b;
+    border-radius: 13px;
+    background: radial-gradient(ellipse, #294a60, #17253a);
+    font-size: 42px;
+    font-weight: 800;
+}
+
+.leccion h3 {
+    margin: 8px 0;
+    font-size: 18px;
+}
+
+.aviso-educativo {
+    margin-top: 18px;
+    border-color: #466052;
+}
+
+.aviso-educativo strong {
+    color: var(--turquesa);
+}
+
+.aviso-educativo p {
+    margin-bottom: 0;
+    color: var(--suave);
+    font-size: 13px;
+}
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 30px 0;
+    margin-top: 10px;
+    color: #71829b;
+    font-size: 11px;
 }
 
 [hidden] {
     display: none !important;
 }
 
-@media (max-width: 480px) {
-    body {
-        padding: 10px;
+@media (max-width: 760px) {
+    .columnas {
+        grid-template-columns: 1fr;
     }
 
-    .juego {
-        padding: 14px;
+    .lista-gestos {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    .marcador {
-        padding: 14px 4px;
+    .tarjetas-aprendizaje {
+        grid-template-columns: 1fr;
     }
 
-    .marcador strong {
-        font-size: 21px;
+    .leccion {
+        padding: 18px;
     }
 
-    .carrusel {
-        gap: 5px;
+    .ilustracion-leccion {
+        height: 100px;
     }
 
-    .flecha {
-        width: 32px;
+    .presentacion {
+        padding-top: 32px;
+    }
+}
+
+@media (max-width: 440px) {
+    .contenedor {
+        width: 94%;
+    }
+
+    .barra {
+        padding: 13px 3%;
+    }
+
+    .estado-sitio {
+        display: none;
+    }
+
+    .pestana {
+        padding: 11px 10px;
+        font-size: 12px;
+    }
+
+    .estadisticas {
+        gap: 8px;
+    }
+
+    .stat {
+        padding: 14px 9px;
+    }
+
+    .stat strong {
+        font-size: 25px;
+    }
+
+    .stat small {
+        font-size: 10px;
+    }
+
+    .panel {
+        padding: 17px;
+    }
+
+    .marco-camara {
+        min-height: 190px;
+    }
+
+    footer {
+        flex-direction: column;
+        text-align: center;
     }
 }
