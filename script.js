@@ -4,68 +4,21 @@ import {
     GestureRecognizer
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
 
-const camara = document.getElementById("camara");
-const botonIniciar = document.getElementById("iniciar");
-const botonReiniciar = document.getElementById("reiniciar");
-const botonJugarDeNuevo = document.getElementById("jugarDeNuevo");
+const $ = id => document.getElementById(id);
 
-const puntosTexto = document.getElementById("puntos");
-const tiempoTotalTexto = document.getElementById("tiempoTotal");
-const numeroRetoTexto = document.getElementById("numeroReto");
-const nombreGesto = document.getElementById("nombreGesto");
-const descripcion = document.getElementById("descripcion");
-const emojiGesto = document.getElementById("emojiGesto");
-const tituloGesto = document.getElementById("tituloGesto");
-const resultado = document.getElementById("resultado");
-const posicion = document.getElementById("posicion");
-const estado = document.getElementById("estado");
-const mensaje = document.getElementById("mensaje");
-const estadoCamara = document.getElementById("estadoCamara");
-const barraTiempo = document.getElementById("barraTiempo");
-const cuentaRegresiva = document.getElementById("cuentaRegresiva");
-const resumen = document.getElementById("resumen");
-const resultadoFinal = document.getElementById("resultadoFinal");
-const botonAnterior = document.getElementById("anterior");
-const botonSiguiente = document.getElementById("siguiente");
-
-// Seis gestos que reconoce el modelo de MediaPipe.
 const gestos = [
-    {
-        nombre: "Puño cerrado",
-        emoji: "✊",
-        codigo: "Closed_Fist",
-        descripcion: "Cierra la mano formando un puño."
-    },
-    {
-        nombre: "Palma abierta",
-        emoji: "✋",
-        codigo: "Open_Palm",
-        descripcion: "Extiende todos los dedos."
-    },
-    {
-        nombre: "Pulgar arriba",
-        emoji: "👍",
-        codigo: "Thumb_Up",
-        descripcion: "Levanta el pulgar."
-    },
-    {
-        nombre: "Pulgar abajo",
-        emoji: "👎",
-        codigo: "Thumb_Down",
-        descripcion: "Dirige el pulgar hacia abajo."
-    },
-    {
-        nombre: "Señal de paz",
-        emoji: "✌️",
-        codigo: "Victory",
-        descripcion: "Levanta los dedos índice y medio."
-    },
-    {
-        nombre: "Señalar arriba",
-        emoji: "☝️",
-        codigo: "Pointing_Up",
-        descripcion: "Levanta únicamente el índice."
-    }
+    { nombre: "Puño cerrado", emoji: "✊", codigo: "Closed_Fist",
+      descripcion: "Cierra la mano formando un puño." },
+    { nombre: "Palma abierta", emoji: "✋", codigo: "Open_Palm",
+      descripcion: "Extiende los dedos y muestra la palma." },
+    { nombre: "Pulgar arriba", emoji: "👍", codigo: "Thumb_Up",
+      descripcion: "Levanta el pulgar." },
+    { nombre: "Pulgar abajo", emoji: "👎", codigo: "Thumb_Down",
+      descripcion: "Dirige el pulgar hacia abajo." },
+    { nombre: "Señal de paz", emoji: "✌️", codigo: "Victory",
+      descripcion: "Levanta el índice y el dedo medio." },
+    { nombre: "Señalar arriba", emoji: "☝️", codigo: "Pointing_Up",
+      descripcion: "Levanta el dedo índice." }
 ];
 
 let reconocedor = null;
@@ -78,49 +31,39 @@ let tiempoInicio = 0;
 let finReto = 0;
 let finPartida = 0;
 let ultimoVideo = -1;
-let gestoEstable = "";
+let gestoAnterior = "";
 let repeticiones = 0;
-let ultimoTiempoReconocido = 0;
-let bucleActivo = false;
 let audio = null;
-let temporizador = null;
+let raf = null;
+let esperaReto = null;
+let puntuacionRetos = [];
 
 const DURACION_RETO = 6000;
 const DURACION_PARTIDA = 60000;
 
 function sonido(frecuencia) {
     try {
-        if (!audio) {
-            audio = new AudioContext();
-        }
-
-        if (audio.state === "suspended") {
-            audio.resume();
-        }
+        if (!audio) audio = new AudioContext();
+        if (audio.state === "suspended") audio.resume();
 
         const oscilador = audio.createOscillator();
         const volumen = audio.createGain();
 
         oscilador.frequency.value = frecuencia;
-        volumen.gain.value = 0.12;
-
+        volumen.gain.value = 0.10;
         oscilador.connect(volumen);
         volumen.connect(audio.destination);
-
         oscilador.start();
-        oscilador.stop(audio.currentTime + 0.12);
+        oscilador.stop(audio.currentTime + 0.14);
     } catch (error) {
-        console.log("No se pudo reproducir el sonido.");
+        console.log("Audio no disponible", error);
     }
 }
 
 async function prepararReconocedor() {
-    if (reconocedor) {
-        return;
-    }
+    if (reconocedor) return;
 
-    estado.textContent = "Cargando reconocimiento de gestos...";
-    mensaje.textContent = "Espera mientras se carga el modelo.";
+    $("mensaje").textContent = "Cargando el reconocedor de gestos...";
 
     const vision = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
@@ -137,13 +80,10 @@ async function prepararReconocedor() {
 }
 
 async function activarCamara() {
-    if (camaraActiva) {
-        return;
-    }
+    if (camaraActiva) return;
 
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
-        throw new Error("La cámara requiere HTTPS o localhost.");
+    if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Abre el juego con HTTPS o desde localhost.");
     }
 
     const flujo = await navigator.mediaDevices.getUserMedia({
@@ -155,339 +95,329 @@ async function activarCamara() {
         }
     });
 
-    camara.srcObject = flujo;
-    await camara.play();
+    $("camara").srcObject = flujo;
+    await $("camara").play();
 
     camaraActiva = true;
-    estadoCamara.textContent = "Cámara activa";
+    $("camaraVacia").hidden = true;
+    $("estadoCamara").textContent = "ACTIVA";
 }
 
-function mostrarGesto() {
+function dibujarSecuencia() {
+    $("listaGestos").innerHTML = "";
+
+    gestos.forEach((gesto, i) => {
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "gesto-mini";
+        tarjeta.id = "mini-" + i;
+
+        const emoji = document.createElement("div");
+        emoji.className = "mini-emoji";
+        emoji.textContent = gesto.emoji;
+
+        const titulo = document.createElement("strong");
+        titulo.textContent = gesto.nombre;
+
+        const estado = document.createElement("small");
+        estado.id = "mini-estado-" + i;
+        estado.textContent = "Pendiente";
+
+        tarjeta.append(emoji, titulo, estado);
+        $("listaGestos").appendChild(tarjeta);
+    });
+}
+
+function mostrarReto() {
     const gesto = gestos[indice];
 
-    nombreGesto.textContent = gesto.nombre;
-    emojiGesto.textContent = gesto.emoji;
-    tituloGesto.textContent = gesto.nombre;
-    descripcion.textContent = gesto.descripcion;
-    posicion.textContent = "RETO " + (indice + 1) + " DE " + gestos.length;
-    numeroRetoTexto.textContent = (indice + 1) + "/" + gestos.length;
+    $("nombreGesto").textContent = gesto.nombre;
+    $("emojiGesto").textContent = gesto.emoji;
+    $("tituloGesto").textContent = gesto.nombre;
+    $("descripcion").textContent = gesto.descripcion;
+    $("numeroReto").textContent = indice + "/6";
+    $("insigniaReto").textContent = "RETO " + (indice + 1);
+    $("resultado").textContent = "Realiza el gesto antes de 6 segundos.";
+    $("cuentaRegresiva").textContent = "6.0 s";
+    $("barraTiempo").style.width = "100%";
+    $("mensaje").textContent = "Coloca la mano frente a la cámara.";
 
-    resultado.textContent = "Realiza el gesto antes de 6 segundos.";
-    estado.textContent = "¡Haz el gesto!";
-    cuentaRegresiva.textContent = "6 segundos";
-    barraTiempo.style.width = "100%";
-    barraTiempo.style.background = "#27dba0";
+    document.querySelectorAll(".gesto-mini").forEach((el, i) => {
+        el.classList.toggle("actual", i === indice);
+    });
 
-    gestoEstable = "";
+    gestoAnterior = "";
     repeticiones = 0;
-    ultimoTiempoReconocido = 0;
     ultimoVideo = -1;
+}
+
+async function iniciarJuego() {
+    if (jugando || preparando) return;
+
+    preparando = true;
+    $("iniciar").disabled = true;
+
+    try {
+        await activarCamara();
+        await prepararReconocedor();
+
+        indice = 0;
+        puntos = 0;
+        puntuacionRetos = [];
+        jugando = true;
+        preparando = false;
+
+        $("puntos").textContent = "0";
+        $("numeroReto").textContent = "0/6";
+        $("tiempoTotal").innerHTML = '60<span class="unidad"> s</span>';
+        $("resumen").hidden = true;
+        $("iniciar").hidden = true;
+        $("reiniciar").hidden = false;
+
+        finPartida = performance.now() + DURACION_PARTIDA;
+        comenzarReto();
+        sonido(700);
+        raf = requestAnimationFrame(actualizar);
+
+    } catch (error) {
+        preparando = false;
+        $("iniciar").disabled = false;
+        $("mensaje").textContent =
+            error.message || "No se pudo iniciar. Revisa la cámara y la conexión.";
+        console.error(error);
+    }
 }
 
 function comenzarReto() {
     tiempoInicio = performance.now();
     finReto = tiempoInicio + DURACION_RETO;
-    mostrarGesto();
-}
-
-function iniciarPartida() {
-    if (jugando || preparando) {
-        return;
-    }
-
-    preparando = true;
-    botonIniciar.disabled = true;
-
-    (async function() {
-        try {
-            await activarCamara();
-            await prepararReconocedor();
-
-            puntos = 0;
-            indice = 0;
-            jugando = true;
-            preparando = false;
-
-            resumen.hidden = true;
-            botonIniciar.hidden = true;
-            botonReiniciar.hidden = true;
-            puntosTexto.textContent = "0";
-
-            finPartida = performance.now() + DURACION_PARTIDA;
-
-            comenzarReto();
-
-            if (!bucleActivo) {
-                bucleActivo = true;
-                requestAnimationFrame(actualizar);
-            }
-
-            mensaje.textContent = "¡Adelante! Mantén la mano visible.";
-            sonido(700);
-
-        } catch (error) {
-            preparando = false;
-            botonIniciar.disabled = false;
-            estado.textContent = "No se pudo iniciar";
-            mensaje.textContent = error.message ||
-                "Revisa el permiso de cámara y tu conexión a Internet.";
-            console.error(error);
-        }
-    })();
+    mostrarReto();
 }
 
 function actualizar() {
+    if (!jugando) {
+        raf = null;
+        return;
+    }
+
     const ahora = performance.now();
 
-    if (jugando) {
-        if (ahora >= finPartida) {
-            terminarPartida();
-        } else {
-            actualizarRelojPartida(ahora);
-            reconocerGesto(ahora);
-
-            if (jugando && ahora >= finReto) {
-                fallarReto();
-            }
-        }
-    }
-
-    if (jugando) {
-        requestAnimationFrame(actualizar);
-    } else {
-        bucleActivo = false;
-    }
-}
-
-function actualizarRelojPartida(ahora) {
-    const segundos = Math.max(
-        0,
-        Math.ceil((finPartida - ahora) / 1000)
-    );
-
-    tiempoTotalTexto.textContent = segundos + " s";
-}
-
-function reconocerGesto(ahora) {
-    if (!reconocedor || camara.readyState < 2) {
+    if (ahora >= finPartida) {
+        terminarJuego();
         return;
     }
 
-    if (camara.currentTime === ultimoVideo) {
-        return;
+    const restantePartida = Math.ceil((finPartida - ahora) / 1000);
+    $("tiempoTotal").innerHTML =
+        restantePartida + '<span class="unidad"> s</span>';
+
+    const restanteReto = Math.max(0, finReto - ahora);
+    $("cuentaRegresiva").textContent =
+        (restanteReto / 1000).toFixed(1) + " s";
+
+    $("barraTiempo").style.width =
+        (restanteReto / DURACION_RETO * 100) + "%";
+
+    $("barraTiempo").style.background =
+        restanteReto < 2000 ? "#ff7676" : "#45e0bd";
+
+    reconocer(ahora);
+
+    if (jugando && ahora >= finReto) {
+        fallarReto();
     }
 
-    ultimoVideo = camara.currentTime;
+    if (jugando) raf = requestAnimationFrame(actualizar);
+    else raf = null;
+}
+
+function reconocer(ahora) {
+    const video = $("camara");
+
+    if (!reconocedor || video.readyState < 2 ||
+        video.currentTime === ultimoVideo) return;
+
+    ultimoVideo = video.currentTime;
 
     try {
-        const deteccion = reconocedor.recognizeForVideo(
-            camara,
-            ahora
-        );
+        const salida = reconocedor.recognizeForVideo(video, ahora);
+        const lista = salida.gestures?.[0];
 
-        if (!deteccion.gestures || deteccion.gestures.length === 0) {
-            gestoEstable = "";
+        if (!lista?.length || lista[0].score < 0.65 ||
+            lista[0].categoryName === "None") {
+            gestoAnterior = "";
             repeticiones = 0;
             return;
         }
 
-        const mejor = deteccion.gestures[0][0];
+        const codigo = lista[0].categoryName;
 
-        if (!mejor || mejor.categoryName === "None" ||
-            mejor.score < 0.65) {
-            gestoEstable = "";
-            repeticiones = 0;
-            return;
-        }
-
-        const codigo = mejor.categoryName;
-
-        if (codigo === gestoEstable) {
+        if (codigo === gestoAnterior) {
             repeticiones++;
         } else {
-            gestoEstable = codigo;
+            gestoAnterior = codigo;
             repeticiones = 1;
         }
 
-        // Exigimos varias detecciones consecutivas para evitar
-        // que una clasificación momentánea dé puntos por error.
-        if (repeticiones >= 3 &&
-            ahora - ultimoTiempoReconocido > 500) {
-            ultimoTiempoReconocido = ahora;
-            comprobarGesto(codigo, ahora);
-        }
-
+        if (repeticiones >= 3) comprobarGesto(codigo, ahora);
     } catch (error) {
-        console.error("Error al reconocer la mano:", error);
+        console.error("Error al reconocer el gesto", error);
     }
 }
 
 function comprobarGesto(codigo, ahora) {
-    if (!jugando) {
-        return;
-    }
+    if (!jugando || codigo !== gestos[indice].codigo) return;
 
-    const gestoCorrecto = gestos[indice];
+    const tardanza = Math.min(6, (ahora - tiempoInicio) / 1000);
+    const ganado = Math.max(10, Math.round(100 * (1 - tardanza / 7)));
 
-    if (codigo === gestoCorrecto.codigo) {
-        const tiempoTardado = Math.min(
-            6,
-            (ahora - tiempoInicio) / 1000
-        );
+    puntos += ganado;
+    puntuacionRetos[indice] = ganado;
+    $("puntos").textContent = puntos;
+    $("resultado").textContent =
+        "¡Correcto! " + tardanza.toFixed(2) +
+        " segundos. +" + ganado + " puntos.";
+    $("insigniaReto").textContent = "¡ACIERTO!";
+    $("mensaje").textContent = "¡Bien hecho! Preparando el siguiente reto.";
 
-        const puntosGanados = Math.max(
-            10,
-            Math.round(100 * (1 - tiempoTardado / 7))
-        );
+    $("mini-" + indice).classList.add("completado");
+    $("mini-estado-" + indice).textContent =
+        tardanza.toFixed(2) + " s · +" + ganado;
 
-        puntos += puntosGanados;
-        puntosTexto.textContent = puntos;
-
-        resultado.textContent =
-            "¡Correcto! Tardaste " +
-            tiempoTardado.toFixed(2) +
-            " segundos. +" + puntosGanados + " puntos.";
-
-        estado.textContent = "¡GESTO CORRECTO!";
-        mensaje.textContent = "¡Muy bien, sigue con el siguiente!";
-        sonido(950);
-
-        indice++;
-
-        if (indice >= gestos.length) {
-            terminarPartida();
-        } else {
-            avanzarReto();
-        }
-    } else {
-        mensaje.textContent = "Gesto detectado, pero no es el solicitado.";
-    }
+    sonido(950);
+    pasarAlSiguiente();
 }
 
 function fallarReto() {
-    if (!jugando) {
+    if (!jugando) return;
+
+    $("resultado").textContent = "Tiempo agotado. +0 puntos.";
+    $("insigniaReto").textContent = "TIEMPO";
+    $("mini-estado-" + indice).textContent = "No completado";
+    $("mensaje").textContent = "No pasa nada, vamos al siguiente reto.";
+    sonido(230);
+    pasarAlSiguiente();
+}
+
+function pasarAlSiguiente() {
+    if (!jugando) return;
+
+    // Evita aceptar detecciones del reto anterior durante la pausa.
+    jugando = false;
+
+    if (raf !== null) cancelAnimationFrame(raf);
+    raf = null;
+
+    indice++;
+    $("numeroReto").textContent = Math.min(indice, 6) + "/6";
+
+    if (indice >= gestos.length) {
+        terminarJuego();
         return;
     }
 
-    resultado.textContent = "Se acabó el tiempo. +0 puntos.";
-    estado.textContent = "¡Tiempo agotado!";
-    mensaje.textContent = "Vamos al siguiente gesto.";
-    sonido(220);
-
-    indice++;
-
-    if (indice >= gestos.length) {
-        terminarPartida();
-    } else {
-        avanzarReto();
-    }
-}
-
-function avanzarReto() {
-    // Pausa breve para separar las detecciones entre retos.
-    jugando = false;
-
-    setTimeout(function() {
-        if (!preparando && indice < gestos.length &&
-            resumen.hidden) {
+    esperaReto = setTimeout(() => {
+        esperaReto = null;
+        if ($("resumen").hidden) {
             comenzarReto();
             jugando = true;
-
-            if (!bucleActivo) {
-                bucleActivo = true;
-                requestAnimationFrame(actualizar);
-            }
+            raf = requestAnimationFrame(actualizar);
         }
-    }, 800);
+    }, 900);
 }
 
-function terminarPartida() {
+function terminarJuego() {
     jugando = false;
     preparando = false;
 
-    clearInterval(temporizador);
+    if (raf !== null) cancelAnimationFrame(raf);
+    raf = null;
 
-    estado.textContent = "Partida terminada";
-    cuentaRegresiva.textContent = "¡Fin!";
-    barraTiempo.style.width = "0%";
+    clearTimeout(esperaReto);
+    esperaReto = null;
 
-    resumen.hidden = false;
-    resultadoFinal.textContent =
-        "Obtuviste " + puntos + " puntos de un máximo aproximado de 600.";
+    $("resumen").hidden = false;
+    $("resultadoFinal").textContent =
+        puntos + " puntos · " + puntuacionRetos.filter(
+            valor => valor !== undefined
+        ).length + " de 6 retos completados";
 
-    botonReiniciar.hidden = true;
-    botonJugarDeNuevo.hidden = false;
-    botonIniciar.hidden = true;
+    $("mensaje").textContent = "Partida finalizada. ¡Gracias por jugar!";
+    $("insigniaReto").textContent = "FINAL";
+    $("cuentaRegresiva").textContent = "Fin";
+    $("barraTiempo").style.width = "0%";
+    $("iniciar").hidden = true;
+    $("reiniciar").hidden = false;
 
-    mensaje.textContent = "¡Gracias por jugar!";
     sonido(600);
+    apagarCamara();
+}
 
-    // Liberar la cámara al terminar.
-    if (camara.srcObject) {
-        camara.srcObject.getTracks().forEach(function(pista) {
-            pista.stop();
-        });
+function apagarCamara() {
+    const video = $("camara");
 
-        camara.srcObject = null;
-        camaraActiva = false;
-        estadoCamara.textContent = "Cámara apagada";
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(pista => pista.stop());
+        video.srcObject = null;
     }
+
+    camaraActiva = false;
+    $("camaraVacia").hidden = false;
+    $("estadoCamara").textContent = "APAGADA";
 }
 
 function reiniciarJuego() {
     jugando = false;
     preparando = false;
 
-    if (camara.srcObject) {
-        camara.srcObject.getTracks().forEach(function(pista) {
-            pista.stop();
-        });
+    if (raf !== null) cancelAnimationFrame(raf);
+    raf = null;
 
-        camara.srcObject = null;
-    }
+    clearTimeout(esperaReto);
+    esperaReto = null;
 
-    camaraActiva = false;
-    puntos = 0;
+    apagarCamara();
+
     indice = 0;
+    puntos = 0;
+    puntuacionRetos = [];
 
-    puntosTexto.textContent = "0";
-    tiempoTotalTexto.textContent = "60 s";
-    numeroRetoTexto.textContent = "0/6";
+    $("puntos").textContent = "0";
+    $("numeroReto").textContent = "0/6";
+    $("tiempoTotal").innerHTML = '60<span class="unidad"> s</span>';
+    $("resumen").hidden = true;
+    $("iniciar").hidden = false;
+    $("iniciar").disabled = false;
+    $("reiniciar").hidden = true;
+    $("mensaje").textContent = "Presiona iniciar para jugar.";
+    $("nombreGesto").textContent = "Prepara tu mano";
+    $("emojiGesto").textContent = "✋";
+    $("tituloGesto").textContent = "¡Prepárate!";
+    $("descripcion").textContent = "Presiona iniciar para comenzar.";
+    $("resultado").textContent = "Aquí aparecerá tu resultado.";
+    $("cuentaRegresiva").textContent = "6.0 s";
+    $("barraTiempo").style.width = "100%";
+    $("insigniaReto").textContent = "LISTO";
 
-    resumen.hidden = true;
-    botonIniciar.hidden = false;
-    botonIniciar.disabled = false;
-    botonReiniciar.hidden = true;
-    botonJugarDeNuevo.hidden = true;
-
-    estado.textContent = "¿Listo para jugar?";
-    nombreGesto.textContent = "✋ Prepara tu mano";
-    descripcion.textContent = "Presiona iniciar para comenzar.";
-    emojiGesto.textContent = "✊";
-    tituloGesto.textContent = "Puño cerrado";
-    resultado.textContent = "Aquí aparecerá tu resultado.";
-    posicion.textContent = "RETO 1 DE 6";
-    cuentaRegresiva.textContent = "6 segundos";
-    barraTiempo.style.width = "100%";
-    estadoCamara.textContent = "Cámara apagada";
-    mensaje.textContent = "Presiona iniciar para jugar.";
-
-    bucleActivo = false;
+    dibujarSecuencia();
 }
 
-botonIniciar.addEventListener("click", iniciarPartida);
-botonReiniciar.addEventListener("click", reiniciarJuego);
-botonJugarDeNuevo.addEventListener("click", reiniciarJuego);
+function cambiarModo(aprendizaje) {
+    if (jugando || preparando) {
+        $("mensaje").textContent =
+            "Termina o reinicia la partida antes de cambiar de modo.";
+        return;
+    }
 
-// Las flechas sirven para consultar los gestos antes de jugar.
-botonAnterior.addEventListener("click", function() {
-    if (jugando || preparando) return;
-    indice = (indice - 1 + gestos.length) % gestos.length;
-    mostrarGesto();
-});
+    $("panelJuego").hidden = aprendizaje;
+    $("panelAprendizaje").hidden = !aprendizaje;
+    $("modoJuego").classList.toggle("activa", !aprendizaje);
+    $("modoAprendizaje").classList.toggle("activa", aprendizaje);
+}
 
-botonSiguiente.addEventListener("click", function() {
-    if (jugando || preparando) return;
-    indice = (indice + 1) % gestos.length;
-    mostrarGesto();
-});
+$("iniciar").addEventListener("click", iniciarJuego);
+$("reiniciar").addEventListener("click", reiniciarJuego);
+$("jugarDeNuevo").addEventListener("click", reiniciarJuego);
+$("modoJuego").addEventListener("click", () => cambiarModo(false));
+$("modoAprendizaje").addEventListener("click", () => cambiarModo(true));
+
+dibujarSecuencia();
