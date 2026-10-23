@@ -4,79 +4,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gesture Challenge</title>
+    <meta name="theme-color" content="#101828">
+    <title>Gesture Challenge | Aprende y juega</title>
     <link rel="stylesheet" href="style.css">
     <script type="module" src="script.js"></script>
 </head>
 <body>
+    <header class="barra">
+        <a class="marca" href="#">
+            <span class="logo">G</span>
+            <span>Gesture<span class="azul">Challenge</span>
+                <small>APRENDE · PRACTICA · INCLUYE</small>
+            </span>
+        </a>
+        <span class="estado-sitio"><i></i> Experiencia interactiva</span>
+    </header>
+
     <main class="contenedor">
-        <header>
-            <p class="etiqueta">JUEGO DE REFLEJOS</p>
-            <h1>Gesture Challenge</h1>
-            <p>¡Demuestra qué tan rápidos son tus reflejos!</p>
-        </header>
-
-        <section class="marcadores">
-            <div class="marcador">
-                <span>PUNTOS</span>
-                <strong id="puntos">0</strong>
-            </div>
-            <div class="marcador">
-                <span>TIEMPO TOTAL</span>
-                <strong id="tiempoTotal">60 s</strong>
-            </div>
-            <div class="marcador">
-                <span>RETO</span>
-                <strong id="numeroReto">0/6</strong>
-            </div>
+        <section class="presentacion">
+            <span class="etiqueta">RECONOCIMIENTO VISUAL</span>
+            <h1>Comunica con tus manos<span>.</span></h1>
+            <p>Entrena tus reflejos y descubre recursos para aprender
+                la Lengua de Señas Mexicana.</p>
         </section>
 
-        <section class="juego">
-            <div class="instrucciones">
-                <p id="estado">¿Listo para jugar?</p>
-                <h2 id="nombreGesto">✋ Prepara tu mano</h2>
-                <p id="descripcion">Presiona iniciar para comenzar.</p>
+        <nav class="pestanas" aria-label="Modos del proyecto">
+            <button class="pestana activa" id="modoJuego">
+                <span>◉</span> Juego de reflejos
+            </button>
+            <button class="pestana" id="modoAprendizaje">
+                <span>▤</span> Aprende LSM
+            </button>
+        </nav>
 
-                <div class="reloj">
-                    <div id="barraTiempo"></div>
+        <section id="panelJuego">
+            <div class="estadisticas">
+                <article class="stat">
+                    <span>PUNTUACIÓN</span>
+                    <strong id="puntos">0</strong>
+                    <small>puntos acumulados</small>
+                </article>
+                <article class="stat">
+                    <span>TIEMPO</span>
+                    <strong id="tiempoTotal">60<span class="unidad"> s</span></strong>
+                    <small>tiempo de partida</small>
+                </article>
+                <article class="stat">
+                    <span>PROGRESO</span>
+                    <strong id="numeroReto">0/6</strong>
+                    <small>retos completados</small>
+                </article>
+            </div>
+
+            <div class="columnas">
+                <section class="panel reto">
+                    <div class="encabezado-panel">
+                        <div>
+                            <span class="etiqueta">RETO ACTUAL</span>
+                            <h2 id="nombreGesto">Prepara tu mano</h2>
+                        </div>
+                        <span class="insignia" id="insigniaReto">LISTO</span>
+                    </div>
+
+                    <div class="visual-gesto">
+                        <span id="emojiGesto">✋</span>
+                    </div>
+                    <h3 id="tituloGesto">¡Prepárate!</h3>
+                    <p id="descripcion">Presiona iniciar para comenzar.</p>
+
+                    <div class="fila-tiempo">
+                        <span>Tiempo para responder</span>
+                        <strong id="cuentaRegresiva">6.0 s</strong>
+                    </div>
+                    <div class="progreso">
+                        <div id="barraTiempo"></div>
+                    </div>
+
+                    <p class="resultado" id="resultado">
+                        Aquí aparecerá tu resultado.
+                    </p>
+
+                    <div class="acciones">
+                        <button class="principal" id="iniciar">
+                            ▶ Iniciar juego
+                        </button>
+                        <button class="secundario" id="reiniciar" hidden>
+                            ↻ Reiniciar
+                        </button>
+                    </div>
+                    <p class="mensaje" id="mensaje" role="status">
+                        La cámara se activará cuando comiences.
+                    </p>
+                </section>
+
+                <section class="panel camara-panel">
+                    <div class="encabezado-panel">
+                        <div>
+                            <span class="etiqueta">EN VIVO</span>
+                            <h2>Tu cámara</h2>
+                        </div>
+                        <span class="insignia" id="estadoCamara">APAGADA</span>
+                    </div>
+
+                    <div class="marco-camara">
+                        <video id="camara" autoplay playsinline muted></video>
+                        <div class="camara-vacia" id="camaraVacia">
+                            <div class="icono-camara">◎</div>
+                            <strong>Tu espacio de práctica</strong>
+                            <span>La imagen aparecerá al iniciar.</span>
+                        </div>
+                    </div>
+
+                    <p class="ayuda-camara">
+                        Mantén la mano visible, con buena iluminación
+                        y a una distancia cómoda de la cámara.
+                    </p>
+
+                    <div class="nota">
+                        <strong>Modo de reflejos</strong>
+                        <p>Reconoce seis categorías de gestos de mano.
+                            No equivale a reconocer señas de LSM.</p>
+                    </div>
+                </section>
+            </div>
+
+            <section class="panel recorrido">
+                <div class="encabezado-panel">
+                    <div>
+                        <span class="etiqueta">TU RECORRIDO</span>
+                        <h2>Secuencia de gestos</h2>
+                    </div>
+                    <span id="resumenSecuencia">6 retos</span>
                 </div>
-                <h3 id="cuentaRegresiva">6 segundos</h3>
-            </div>
+                <div class="lista-gestos" id="listaGestos"></div>
+            </section>
 
-            <div class="carrusel">
-                <button id="anterior" class="flecha" aria-label="Gesto anterior" disabled>‹</button>
-                <div class="tarjeta">
-                    <span id="posicion">RETO 1 DE 6</span>
-                    <div id="emojiGesto">✊</div>
-                    <h3 id="tituloGesto">Puño cerrado</h3>
-                    <p id="resultado">Aquí aparecerá tu resultado.</p>
-                </div>
-                <button id="siguiente" class="flecha" aria-label="Siguiente gesto" disabled>›</button>
-            </div>
-
-            <div class="camara-contenedor">
-                <video id="camara" autoplay playsinline muted></video>
-                <div class="etiqueta-camara" id="estadoCamara">
-                    Cámara apagada
-                </div>
-            </div>
-
-            <div class="acciones">
-                <button id="iniciar">▶ Iniciar juego</button>
-                <button id="reiniciar" class="secundario" hidden>↻ Jugar otra vez</button>
-            </div>
-
-            <p id="mensaje" role="status">Activa la cámara al comenzar.</p>
+            <section class="panel final" id="resumen" hidden>
+                <span class="etiqueta">RESULTADO FINAL</span>
+                <h2>¡Partida terminada!</h2>
+                <strong id="resultadoFinal"></strong>
+                <button class="principal" id="jugarDeNuevo">
+                    Jugar otra vez
+                </button>
+            </section>
         </section>
 
-        <section class="resumen" id="resumen" hidden>
-            <h2>🏆 ¡Partida terminada!</h2>
-            <p id="resultadoFinal"></p>
-            <button id="jugarDeNuevo">Volver a jugar</button>
+        <section id="panelAprendizaje" hidden>
+            <div class="panel introduccion">
+                <span class="etiqueta">APRENDE CON RESPETO</span>
+                <h2>Descubre la Lengua de Señas Mexicana</h2>
+                <p>Consulta materiales educativos y estudia las señas
+                    mediante recursos documentados. La LSM es una
+                    lengua natural con gramática propia.</p>
+                <a class="enlace" target="_blank" rel="noopener"
+                   href="https://pdh.cdmx.gob.mx/storage/app/media/banner/Dic_LSM%202.pdf">
+                    Consultar diccionario de LSM ↗
+                </a>
+            </div>
+
+            <div class="tarjetas-aprendizaje">
+                <article class="panel leccion">
+                    <span class="numero-leccion">01</span>
+                    <div class="ilustracion-leccion">A–Z</div>
+                    <span class="etiqueta">INICIO</span>
+                    <h3>Abecedario manual</h3>
+                    <p>Explora las configuraciones de la mano
+                        que representan letras.</p>
+                    <a target="_blank" rel="noopener"
+                       href="https://nemd.aprende.gob.mx/contenido/recurso/abecedario-en-lengua-de-senas-mexicana/">
+                        Ver material educativo ↗
+                    </a>
+                </article>
+
+                <article class="panel leccion">
+                    <span class="numero-leccion">02</span>
+                    <div class="ilustracion-leccion">📚</div>
+                    <span class="etiqueta">VOCABULARIO</span>
+                    <h3>Palabras y conceptos</h3>
+                    <p>Consulta entradas del diccionario y revisa
+                        cómo se expresa cada concepto.</p>
+                    <a target="_blank" rel="noopener"
+                       href="https://pdh.cdmx.gob.mx/storage/app/media/banner/Dic_LSM%202.pdf">
+                        Explorar diccionario ↗
+                    </a>
+                </article>
+
+                <article class="panel leccion">
+                    <span class="numero-leccion">03</span>
+                    <div class="ilustracion-leccion">🤝</div>
+                    <span class="etiqueta">COMUNIDAD</span>
+                    <h3>Lengua y cultura</h3>
+                    <p>Conoce la importancia de la comunidad sorda
+                        y del aprendizaje respetuoso de la LSM.</p>
+                    <a target="_blank" rel="noopener"
+                       href="https://www.gob.mx/conadis/articulos/lengua-de-senas-mexicana-lsm?idiom=es">
+                        Conocer más ↗
+                    </a>
+                </article>
+            </div>
+
+            <div class="panel aviso-educativo">
+                <strong>¿Cómo se relaciona el aprendizaje con el juego?</strong>
+                <p>El modo de reflejos detecta gestos genéricos. No
+                    califica señas auténticas de LSM. Para incorporar
+                    retos de LSM verificados necesitaremos referencias
+                    visuales fiables y un modelo entrenado para esas señas.</p>
+            </div>
         </section>
 
         <footer>
-            Gesture Challenge · Reconocimiento de manos con MediaPipe
+            <span>Gesture Challenge</span>
+            <span>Proyecto educativo e interactivo</span>
         </footer>
     </main>
 </body>
